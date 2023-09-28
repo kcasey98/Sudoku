@@ -1,0 +1,85 @@
+import random
+import pdb
+
+def is_valid(board, row, col, num):
+    def is_knights_move_away(r1, c1, r2, c2):
+        return abs(r1 - r2) == 2 and abs(c1 - c2) == 1 or abs(r1 - r2) == 1 and abs(c1 - c2) == 2
+    
+    # Check row and column
+    for i in range(9):
+        if board[row][i] == num or board[i][col] == num:
+            return False
+    
+    # Check 3x3 subgrid
+    start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+    for i in range(3):
+        for j in range(3):
+            if board[start_row + i][start_col + j] == num:
+                return False
+    
+    # Check knight's move away
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] != 0 and is_knights_move_away(row, col, i, j) and board[i][j] == num:
+                return False
+    
+    return True
+
+def solve_sudoku(board):
+    for row in range(9):
+        for col in range(9):
+            if board[row][col] == 0:
+                for num in range(1, 10):
+                    if is_valid(board, row, col, num):
+                        board[row][col] = num
+                        if solve_sudoku(board):
+                            return True
+                        board[row][col] = 0
+                return False
+    return True
+
+def generate_sudoku(difficulty):
+    print("generate")
+    board = [[0 for _ in range(9)] for _ in range(9)]
+    solve_sudoku(board)
+
+    print_sudoku(board)
+    
+    pdb.set_trace()
+
+    # Remove numbers to create puzzle
+    cells_to_remove = 81 - difficulty
+    while cells_to_remove > 0:
+        print(cells_to_remove)
+        #print("while")
+        row = random.randint(0, 8)
+        col = random.randint(0, 8)
+        if board[row][col] != 0:
+            temp = board[row][col]
+            board[row][col] = 0
+            temp_board = [row[:] for row in board]
+            
+            solutions = 0
+            solve_sudoku(temp_board)
+            for r in temp_board:
+                solutions += r.count(0)
+            
+            if solutions != 1:
+                board[row][col] = temp
+            else:
+                cells_to_remove -= 1
+    print("after while")
+    
+    return board
+
+def print_sudoku(board):
+    for row in board:
+        print(" ".join(map(str, row)))
+
+if __name__ == "__main__":
+    print("1")
+    difficulty = 70  # Adjust this number for desired difficulty
+    sudoku_puzzle = generate_sudoku(difficulty)
+    print("2")
+    print("Generated Partially Completed Sudoku Puzzle:")
+    print_sudoku(sudoku_puzzle)
